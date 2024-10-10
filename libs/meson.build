@@ -1,8 +1,14 @@
 inc += include_directories('.')
 
 headers = [ 
-  'api/inspector/funcs/htc.hpp',
-  'api/executor/funcs/htc.hpp'
+  'https/https.hpp',
+  'https/helpers/inspector.hpp',
+
+  'hack/concepts/concepts.hpp',
+  'hack/logger/logger.hpp',
+  'hack/utils/color.hpp',
+  'hack/iterators/associative_ostream_iterator.hpp',
+  'hack/iterators/sequence_ostream_iterator.hpp',
 ]
 
 sources = [ ]

@@ -37,5 +37,6 @@ deps = [
   subproject('httplib').get_variable('cpp_httplib_dep'),
 ]
 
+subdir('libs')
 subdir('src')
 subdir('bin')
