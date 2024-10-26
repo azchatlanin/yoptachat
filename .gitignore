@@ -1,0 +1,6 @@
+build
+.cache
+subprojects/*
+!subprojects/httplib.wrap
+!subprojects/jwt-cpp.wrap
+!subprojects/nlohmann_json.wrap
