@@ -6,6 +6,7 @@
 #include "hack/logger/logger.hpp"
 
 #include "helpers/inspector.hpp"
+#include "helpers/tracer.hpp"
 #include "helpers/function_manager.hpp"
 #include "helpers/verification.hpp"
 #include "helpers/execute.hpp"
@@ -21,6 +22,13 @@ namespace var
 
 namespace https
 {
+  // HERE
+  // можно и так в будущем если сильно необходимо 
+  // но тогда прикрутить концепт на валидацию нужных методов
+  // и пользовательский Exception должен тогда наследоваться от hack::exception
+  // и реализовать эти методы
+  // Тажке история и про hack::transaction !!!
+  // template<typename Exception>
   class server : public httplib::Server
   {
     public:
@@ -28,10 +36,10 @@ namespace https
       ~server() = default;
 
     public:
-      void init(std::string service_name, std::string url = "/")
+      void init(std::string service_name, std::string api_url = "/", std::string log_url = "/")
       {
         m_service_name = service_name;
-        API_URL = url;
+        API_URL = api_url;
 
         set_read_timeout(5, 0);
         set_write_timeout(5, 0);
@@ -53,6 +61,9 @@ namespace https
       {
         try 
         {
+          std::thread th(&tracer::process, &m_tracer);
+          th.detach();
+
           hack::log(" ")(std::format("[{}]", m_service_name), "listen:", var::HOST, var::PORT);
           listen(var::HOST, var::PORT);
         }
@@ -65,13 +76,6 @@ namespace https
           hack::error()("SUPPER ERROR!!! GOOD LUCK MY FRIEND!!! :)");
         }
       }
-
-    private:
-      std::string m_service_name { "base_service" };
-      std::string API_URL { "/" };
-      inspector m_inspector;
-      function_manager m_function_manager;
-
 
     private:
       void set_CORS()
@@ -105,14 +109,21 @@ namespace https
           }
           catch(hack::exception& ex)
           {
-            ex.transaction(tr);
             ex.service(m_service_name);
-            ex.log();// это понеобходимости
-            // Тут нужно осуществить логирование в БД 
+            ex.transaction(tr);
+            m_tracer.add(std::forward<hack::exception>(ex));
           }
 
           res.set_content(nlohmann::to_string(tr.m_data.m_result), var::HEADER_FLAG_JSON); 
         });
       }
+
+    private:
+      std::string m_service_name { "base_service" };
+      std::string API_URL { "/" };
+      std::string LOG_URL { "log_service/log" };
+      inspector m_inspector;
+      function_manager m_function_manager;
+      tracer m_tracer;
   };
 }

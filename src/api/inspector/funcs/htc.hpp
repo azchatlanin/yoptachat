@@ -17,6 +17,12 @@ namespace inspector
 {
   inline void healthcheck(hack::transaction& tr)
   {
-    hack::json::compare(tr, json_data::healthcheck);
+    auto [ok, msg] = hack::json::compare(tr, json_data::healthcheck);
+    if (!ok) 
+    { 
+      hack::exception ex;
+      ex.description(msg); 
+      throw ex; 
+    }
   }
 }
