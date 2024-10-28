@@ -3,7 +3,7 @@
 #include "hack/transaction/transaction.hpp"
 #include "hack/utils/json_compare.hpp"
 
-namespace api::inspector::json_data
+namespace logs_ingester::inspector::json_data
 {
   inline auto healthcheck = R"(
     {
@@ -13,7 +13,7 @@ namespace api::inspector::json_data
   )"_json;
 }
 
-namespace api::inspector
+namespace logs_ingester::inspector
 {
   inline void healthcheck(hack::transaction& tr)
   {

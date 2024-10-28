@@ -4,27 +4,27 @@
 #include <queue>
 #include <mutex>
 
-#include "hack/exception/exception.hpp"
+#include "hack/tracer/tracer.hpp"
 
-namespace https
+namespace logs_ingester::utils
 {
   // Класс отвечающий за все виды отправки всех видов 
   // логов туда куда нужно.
-  class tracer
+  class tracer : public hack::tracer
   {
     public:
       tracer() = default;
       ~tracer() = default;
 
     public:
-      void add(hack::exception&& ex) 
+      void add(hack::exception&& ex) override
       {
         std::scoped_lock lock(m_mutex);
         m_exceptions.push(std::move(ex));
         m_cond.notify_one();
       }
 
-      void process() 
+      void process() override
       { 
         std::unique_lock l { m_mutex };
         m_cond.wait(l, [this]() { return !m_exceptions.empty(); });
@@ -33,10 +33,6 @@ namespace https
 
         ex.log();
       }
-
-    private:
-      std::mutex m_mutex;
-      std::condition_variable m_cond;
-      std::queue<hack::exception> m_exceptions;
   };
 }
+

@@ -1,21 +1,10 @@
-#include "https/https.hpp"
-
-#include "api/inspector/inspector.hpp" // IWYU pragma: keep
-#include "api/executor/executor.hpp" // IWYU pragma: keep
-
-namespace services::api
-{
-  void run()
-  {
-    https::server srv;
-    srv.init("API", "/api");
-
-    srv.registration("healthcheck", inspector::healthcheck, executor::healthcheck);
-    srv.run();
-  }
-}
+#include "run.hpp"
 
 auto main(int argc, char* args[]) -> int
 {
-  services::api::run();
+  std::vector<std::thread> ths;
+  ths.push_back(std::thread{ services::api::run });
+  ths.push_back(std::thread{ services::logs_ingester::run });
+  for (auto& th : ths)
+    th.join();
 }

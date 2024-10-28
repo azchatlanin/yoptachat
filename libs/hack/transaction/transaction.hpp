@@ -5,6 +5,7 @@
 #include "hack/security/uuid.hpp"
 #include "hack/exception/exception.hpp"
 #include "hack/utils/json_converter.hpp"
+#include "hack/logger/logger.hpp"
 
 namespace hack
 {
@@ -25,11 +26,13 @@ namespace hack
   class transaction : public hack::utils::json_converter
   {
     public:
-      transaction() : m_transaction_id { hack::security::generate_uuid() } { };
+      transaction() : m_transaction_id { hack::security::generate_uuid() }, m_service_name { "EMPRY SERVICE" } { };
+      transaction(std::string service_name) : m_transaction_id { hack::security::generate_uuid() }, m_service_name { service_name } { };
       ~transaction() = default;
 
     public:
       std::string m_transaction_id;
+      std::string m_service_name;
 
       struct passport
       {
@@ -60,6 +63,7 @@ namespace hack
       {
         JSON j;
         j["transaction_id"] = m_transaction_id;
+        j["service_name"] = m_service_name;
         j["function_name"] = m_passport.m_function_name;
         j["token"] = m_passport.m_token;
         j["payload"] = m_data.m_payload;
@@ -67,6 +71,16 @@ namespace hack
         j["id"] = m_passport.m_id;
 
         return j;
+      }
+
+      void log(std::experimental::source_location location = std::experimental::source_location::current())
+      {
+        std::cout << utils::color::bold << utils::color::green <<"["+m_service_name+"] " << utils::color::reset
+                  << location.file_name() << ":" 
+                  << utils::color::italic << utils::color::yellow << location.function_name() << "()" << utils::color::reset
+                  << utils::color::bold << utils::color::blue << "[" << location.line() << "]" << utils::color::reset << ": "
+                  << convert_to_json().dump() << std::endl;
+
       }
 
     private:
@@ -125,6 +139,7 @@ namespace hack
           hack::exception ex;
           ex.description("Dont parser body from string");
           ex.system_error(e);
+          hack::log()(req.body);
           throw ex; 
         }
         catch(...)

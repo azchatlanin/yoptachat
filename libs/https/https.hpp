@@ -1,3 +1,5 @@
+#pragma once
+
 #include <string>
 #include <format>
 
@@ -6,29 +8,27 @@
 #include "hack/logger/logger.hpp"
 
 #include "helpers/inspector.hpp"
-#include "helpers/tracer.hpp"
 #include "helpers/function_manager.hpp"
 #include "helpers/verification.hpp"
 #include "helpers/execute.hpp"
 
-namespace var
-{
-  inline const int PORT = 5000;
-  inline const std::string HOST = "0.0.0.0";
-  inline const std::string HEADER_FLAG_JSON = "application/json"; 
-  inline const std::string HEADER_TOKEN = "TRS-server-token";
-  inline const std::string HEADER_FUNCTION = "TRS-server-function";
-}
 
 namespace https
 {
+  namespace var
+  {
+    inline const std::string HEADER_FLAG_JSON = "application/json"; 
+    inline const std::string HEADER_TOKEN = "TRS-server-token";
+    inline const std::string HEADER_FUNCTION = "TRS-server-function";
+  }
+
   // HERE
-  // можно и так в будущем если сильно необходимо 
-  // но тогда прикрутить концепт на валидацию нужных методов
+  // можно  в будущем если сильно необходимо 
+  // прикрутить концепт на валидацию нужных методов
   // и пользовательский Exception должен тогда наследоваться от hack::exception
   // и реализовать эти методы
   // Тажке история и про hack::transaction !!!
-  // template<typename Exception>
+  template<typename Tracer>
   class server : public httplib::Server
   {
     public:
@@ -61,11 +61,11 @@ namespace https
       {
         try 
         {
-          std::thread th(&tracer::process, &m_tracer);
+          std::thread th(&Tracer::process, &m_tracer);
           th.detach();
 
-          hack::log(" ")(std::format("[{}]", m_service_name), "listen:", var::HOST, var::PORT);
-          listen(var::HOST, var::PORT);
+          hack::log(" ")(std::format("[{}]", m_service_name), "listen:", HOST, PORT);
+          listen(HOST, PORT);
         }
         catch(std::exception& e)
         {
@@ -99,7 +99,7 @@ namespace https
           res.set_header("Access-Control-Allow-Methods", "POST");
           res.set_header("Access-Control-Allow-Credentials", "false");
 
-          hack::transaction tr;
+          hack::transaction tr{m_service_name};
 
           try
           {
@@ -118,12 +118,16 @@ namespace https
         });
       }
 
+    public:
+      int PORT = 5000;
+      std::string HOST = "0.0.0.0";
+
     private:
       std::string m_service_name { "base_service" };
       std::string API_URL { "/" };
       std::string LOG_URL { "log_service/log" };
       inspector m_inspector;
       function_manager m_function_manager;
-      tracer m_tracer;
+      Tracer m_tracer;
   };
 }

@@ -1,20 +1,15 @@
-# YpotaCaht
+# YpotaChat
 Это познавательно-развлекательный сервис способствующий более лучшему пониманию взаимодействия С++ и человека.
 
 #### Описание модели сервиса
 
 ```mermaid
-graph LR
+flowchart LR
 
-CLIENT[Client] -- https <br/> data --> HTTPS{API <br/> https service}
-CLIENT[Client] -- https <br/> media file --> MEDIA{MEDIA <br/> https service for upload media}
-MEDIA -- https <br/> http link to media--> CLIENT
-
-HTTPS -- gRPC <br/> data: text --> DATABASE_WORKER{DATABASE WORKER <br/> service}
-DATABASE_WORKER -- pgsql <br/> data --> DATABASE_INSTANCE[(POSTGRESQL)]
-
-HTTPS -- gRPC <br/> data: media --> VOICE_ANALIZER{VOICE ANALIZER <br/> service}
-VOICE_ANALIZER -- gRPC <br/> data: media --> DATABASE_WORKER{DATABASE WORKER <br/> service}
+subgraph API
+  HTTPS{API <br/> https service} -- https <br/> data --> UNIFIED_AGENT{UNIFIED AGENT <br/> log service}
+end
+CLIENT[Client] -- https <br/> data --> API
 ```
 
 #### Техническое описание модели проекта
