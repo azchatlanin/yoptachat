@@ -4,15 +4,16 @@
 #include <string>
 
 #include "hack/utils/using.hpp"
-#include "hack/exception/exception.hpp"
 #include "hack/string/string_concat_helper.hpp"
 
 // простой сравниватель json-ов
 namespace hack::json
 {
+  using compare_result = std::pair<bool, std::string>;
+
   namespace
   {
-    inline std::pair<bool, std::string> compare_impl(JSON& target, JSON& comp)
+    inline compare_result compare_impl(JSON& target, JSON& comp)
     {
       if (target.empty())
         return { false, "payload is empty" };
@@ -35,15 +36,12 @@ namespace hack::json
     }
   }
 
+  // HERE
+  // можно поставить концепт на то , что структура Transaction
+  // иеет необходимые поля и методы
   template<typename Transaction>
-  inline void compare(Transaction& base, JSON& comp)
+  inline compare_result compare(Transaction& base, JSON& comp)
   {
-    auto [ok, msg] = compare_impl(base.m_data.m_payload, comp);
-    if (!ok) 
-    { 
-      hack::exception ex;
-      ex.description(msg); 
-      throw ex; 
-    }
+    return compare_impl(base.m_data.m_payload, comp);
   }
 }
